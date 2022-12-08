@@ -1,4 +1,4 @@
-from flask import Flask, url_for, request, render_template, views
+from flask import Flask, url_for, request, render_template, views, redirect
 from werkzeug.routing import BaseConverter
 from functools import wraps
 
@@ -123,6 +123,20 @@ app.add_url_rule('/cbvtest/', view_func=CBVTest.as_view(name='cbvtest'), endpoin
 @login_verify
 def my_info():
     return '个人信息页面'
+
+
+@app.route('/user_info/')
+def user_info():
+    name = request.args.get('name')
+    pwd = request.args.get('pwd')
+    if name == 'lxy' and pwd == '123':
+        return '{}的信息'.format(name)
+    return redirect('/login/', code=301)  # 可以换成 return redirect(url_for('login'))
+
+
+@app.route('/login/')
+def login():
+    return '这是登录页面'
 
 
 if __name__ == '__main__':
