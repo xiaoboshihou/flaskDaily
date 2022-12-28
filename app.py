@@ -3,6 +3,7 @@ from werkzeug.routing import BaseConverter
 from functools import wraps
 
 app = Flask(__name__)
+app.config.update(TEMPLATES_AUTO_RELOAD=True)
 
 
 class TelephoneConverter(BaseConverter):
@@ -31,11 +32,19 @@ app.url_map.converters['list'] = ListConverter
 
 
 @app.route('/')
-def demo1():
-    print(url_for("book"))  # 注意这个引用的是视图函数的名字 字符串格式
-    print(type(url_for("book")))
+def index():
+    return render_template('index.html', name="mark", age=18)
+# @app.route('/')
+# def demo1():
+#     print(url_for("book"))  # 注意这个引用的是视图函数的名字 字符串格式
+#     print(type(url_for("book")))
+#
+#     return url_for("book")
 
-    return url_for("book")
+
+@app.route('/info/')
+def info():
+    return render_template('info.html')
 
 
 @app.route('/book_list/')
@@ -137,6 +146,21 @@ def user_info():
 @app.route('/login/')
 def login():
     return '这是登录页面'
+
+
+# @app.route('/index/')
+# def index():
+#     return render_template('index.html', name="mark", age=18)
+
+
+@app.route('/hello_world/')
+def hello_world():
+    return render_template('base.html')
+
+
+@app.route('/demo/')
+def demo():
+    return render_template('detail.html')
 
 
 if __name__ == '__main__':

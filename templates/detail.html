@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block demo %}
+    <p>子模板中重写demo的内容</p>
+{% endblock %}
+{% block main %}
+    {{ super() }}   {# 保留基模板中本block的代码 #}
+    {{ self.demo() }} {# 调用demo block的代码 #}
+    <p>子模板中重写main的内容 </p>
+{% endblock %}
