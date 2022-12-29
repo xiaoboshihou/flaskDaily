@@ -1,9 +1,13 @@
-from flask import Flask, url_for, request, render_template, views, redirect
+import os
+
+from flask import Flask, flash, url_for, request, render_template, views, redirect, get_flashed_messages
 from werkzeug.routing import BaseConverter
 from functools import wraps
 
+
 app = Flask(__name__)
 app.config.update(TEMPLATES_AUTO_RELOAD=True)
+app.secret_key = 'some_secret'
 
 
 class TelephoneConverter(BaseConverter):
@@ -29,17 +33,6 @@ class ListConverter(BaseConverter):
 
 app.url_map.converters['tel'] = TelephoneConverter
 app.url_map.converters['list'] = ListConverter
-
-
-@app.route('/')
-def index():
-    return render_template('index.html', name="mark", age=18)
-# @app.route('/')
-# def demo1():
-#     print(url_for("book"))  # 注意这个引用的是视图函数的名字 字符串格式
-#     print(type(url_for("book")))
-#
-#     return url_for("book")
 
 
 @app.route('/info/')
@@ -72,11 +65,6 @@ def demo3():
 @app.route('/school/')
 def school():
     return 'school message'
-
-
-# @app.route('/student/<int:id>/')
-# def student(id):
-#     return 'student {}'.format(id)
 
 
 @app.route('/student/<tel:telenum>/')
@@ -143,16 +131,6 @@ def user_info():
     return redirect('/login/', code=301)  # 可以换成 return redirect(url_for('login'))
 
 
-@app.route('/login/')
-def login():
-    return '这是登录页面'
-
-
-# @app.route('/index/')
-# def index():
-#     return render_template('index.html', name="mark", age=18)
-
-
 @app.route('/hello_world/')
 def hello_world():
     return render_template('base.html')
@@ -161,6 +139,25 @@ def hello_world():
 @app.route('/demo/')
 def demo():
     return render_template('detail.html')
+
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+
+@app.route('/login/')
+def login():
+    if request.args.get('name') == 'rocky':
+        return 'ok'
+    flash('用户名错误', category="username_error")
+    flash('用户密码错误', "password_error")
+    return 'error,设置了闪现'
+
+
+@app.route('/get_flash/')
+def get_flash():
+    return '闪现的信息是{}'.format(get_flashed_messages(category_filter=['username_error']))
 
 
 if __name__ == '__main__':

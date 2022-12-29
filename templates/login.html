@@ -1,16 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-<form action="/login_inner/" method="POST">
-    用户：<input type="text" name="username">
-    密码：<input type="text" name="password">
-    <input type="submit" value="提交">
+<h1>登录页面</h1>
+{% if error %}
+<p class=error><strong>Error:</strong> {{ error }}
+{% endif %}
+    <form action="" method=post>
+    用户名:
+    <input type=text name=username>
+    密码:
+    <input type=password name=password>
+    <p><input type=submit value=Login></p>
 </form>
-
-</body>
-</html>
