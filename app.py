@@ -3,11 +3,26 @@ import os
 from flask import Flask, flash, url_for, request, render_template, views, redirect, get_flashed_messages
 from werkzeug.routing import BaseConverter
 from functools import wraps
+from flask_sqlalchemy import SQLAlchemy
 
 
 app = Flask(__name__)
 app.config.update(TEMPLATES_AUTO_RELOAD=True)
 app.secret_key = 'some_secret'
+
+HOST = '127.0.0.1'
+PORT = '3306'
+DATABASE_NAME = 'daily_flask'
+USERNAME = 'root'
+PASSWORD = 'Abcde_12345'
+
+DB_URI = "mysql+pymysql://{username}:{password}@{host}:{port}/{databasename}?charset=utf8mb4"\
+    .format(username=USERNAME, password=PASSWORD, host=HOST, port=PORT, databasename=DATABASE_NAME)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = DB_URI
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
 
 
 class TelephoneConverter(BaseConverter):
@@ -160,6 +175,60 @@ def get_flash():
     return '闪现的信息是{}'.format(get_flashed_messages(category_filter=['username_error']))
 
 
+class UserInfo(db.Model):
+    __tablename__ = 'user_info'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    username = db.Column(db.String(20), nullable=False)
+
+
+class School(db.Model):
+    __tablename__ = "school"
+    id = db.Column(db.Integer, primary_key=True, nullable=False, autoincrement=True, comment="ID")
+    name = db.Column(db.String(30), nullable=False, server_default='', comment="学校名称")
+    area = db.Column(db.String(30), nullable=False, server_default='', comment="所属地区")
+    score = db.Column(db.Integer, nullable=False, server_default='600', comment="录取分数线")
+
+    def __repr__(self):
+        return "<School(name:{})>".format(self.name)
+
+
 if __name__ == '__main__':
+    school_01 = School(name="北京大学", area="北京", score=658)  # 实例化模型类作为一条记录
+    school_02 = School(name="清华大学", area="北京", score=667)
+    school_03 = School(name="中山大学", area="广东", score=645)
+    school_04 = School(name="复旦大学", area="上海", score=650)
+
+    with app.app_context():
+        db.create_all()  # 创建表
+
+        # db.session.add(school_01)  # 把新创建的记录添加到数据库会话
+        # db.session.add(school_02)
+        # db.session.add(school_03)
+        # db.session.add(school_04)
+        #
+        # db.session.commit()  # 提交数据库会话
+
+        all_school = School.query.first()
+        print(all_school)
+
+        beijing_all = School.query.filter(School.area == "北京").all()
+        beijing_first = School.query.filter(School.area == "北京").first()
+        print(beijing_all)
+        print(beijing_first)
+
+        fudan_school = School.query.filter(School.name == '复旦大学').first()
+        print(fudan_school)
+
+        fudan_school = db.session.query(School).filter(School.name == '复旦大学').first()
+        print(fudan_school)
+
+        beida = School.query.filter(School.name == '北京大学').first()
+        beida.score = 630
+        db.session.commit()
+
+        qinghua = School.query.filter(School.name == '清华大学').first()
+        db.session.delete(qinghua)
+        db.session.commit()
+
     app.run(debug=True)
 
