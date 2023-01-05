@@ -1,6 +1,7 @@
 import os
+from datetime import datetime, timedelta
 
-from flask import Flask, flash, url_for, request, render_template, views, redirect, get_flashed_messages
+from flask import Flask, flash, url_for, request, render_template, views, redirect, get_flashed_messages, Response
 from werkzeug.routing import BaseConverter
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
@@ -146,19 +147,41 @@ def user_info():
     return redirect('/login/', code=301)  # 可以换成 return redirect(url_for('login'))
 
 
-@app.route('/hello_world/')
-def hello_world():
-    return render_template('base.html')
-
-
 @app.route('/demo/')
 def demo():
     return render_template('detail.html')
 
 
 @app.route('/')
-def index():
-    return render_template('index.html')
+def hello_world():
+    resp = Response('设置cookie给浏览器')
+    resp.set_cookie('user_name', 'mark', max_age=60)
+
+    return resp
+
+
+@app.route('/expires_demo/')
+def expires_demo():
+    resp = Response('设置cookie给浏览器, cookie设置过期时间为一个月后')
+    expires = datetime.now()+timedelta(days=30, hours=16)
+    resp.set_cookie('user_name', 'marks', expires=expires)
+    return resp
+
+
+@app.route('/get_cookie/')
+def get_cookie():
+    user_name = request.cookies.get('user_name')
+    if user_name == 'mark':
+        return '{}的信息'.format(user_name)
+
+    return 'cookie验证失败'
+
+
+@app.route('/del/')
+def del_cookie():
+    resp = Response('删除cookie')
+    resp.delete_cookie('user_name')
+    return resp
 
 
 @app.route('/login/')
@@ -193,42 +216,42 @@ class School(db.Model):
 
 
 if __name__ == '__main__':
-    school_01 = School(name="北京大学", area="北京", score=658)  # 实例化模型类作为一条记录
-    school_02 = School(name="清华大学", area="北京", score=667)
-    school_03 = School(name="中山大学", area="广东", score=645)
-    school_04 = School(name="复旦大学", area="上海", score=650)
+    # school_01 = School(name="北京大学", area="北京", score=658)  # 实例化模型类作为一条记录
+    # school_02 = School(name="清华大学", area="北京", score=667)
+    # school_03 = School(name="中山大学", area="广东", score=645)
+    # school_04 = School(name="复旦大学", area="上海", score=650)
 
-    with app.app_context():
-        db.create_all()  # 创建表
-
-        # db.session.add(school_01)  # 把新创建的记录添加到数据库会话
-        # db.session.add(school_02)
-        # db.session.add(school_03)
-        # db.session.add(school_04)
-        #
-        # db.session.commit()  # 提交数据库会话
-
-        all_school = School.query.first()
-        print(all_school)
-
-        beijing_all = School.query.filter(School.area == "北京").all()
-        beijing_first = School.query.filter(School.area == "北京").first()
-        print(beijing_all)
-        print(beijing_first)
-
-        fudan_school = School.query.filter(School.name == '复旦大学').first()
-        print(fudan_school)
-
-        fudan_school = db.session.query(School).filter(School.name == '复旦大学').first()
-        print(fudan_school)
-
-        beida = School.query.filter(School.name == '北京大学').first()
-        beida.score = 630
-        db.session.commit()
-
-        qinghua = School.query.filter(School.name == '清华大学').first()
-        db.session.delete(qinghua)
-        db.session.commit()
+    # with app.app_context():
+    #     db.create_all()  # 创建表
+    #
+    #     # db.session.add(school_01)  # 把新创建的记录添加到数据库会话
+    #     # db.session.add(school_02)
+    #     # db.session.add(school_03)
+    #     # db.session.add(school_04)
+    #     #
+    #     # db.session.commit()  # 提交数据库会话
+    #
+    #     all_school = School.query.first()
+    #     print(all_school)
+    #
+    #     beijing_all = School.query.filter(School.area == "北京").all()
+    #     beijing_first = School.query.filter(School.area == "北京").first()
+    #     print(beijing_all)
+    #     print(beijing_first)
+    #
+    #     fudan_school = School.query.filter(School.name == '复旦大学').first()
+    #     print(fudan_school)
+    #
+    #     fudan_school = db.session.query(School).filter(School.name == '复旦大学').first()
+    #     print(fudan_school)
+    #
+    #     beida = School.query.filter(School.name == '北京大学').first()
+    #     beida.score = 630
+    #     db.session.commit()
+    #
+    #     qinghua = School.query.filter(School.name == '清华大学').first()
+    #     db.session.delete(qinghua)
+    #     db.session.commit()
 
     app.run(debug=True)
 
